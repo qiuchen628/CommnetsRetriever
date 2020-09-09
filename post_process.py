@@ -1,3 +1,8 @@
+"""
+post processing for the stored csv file
+
+"""
+
 import pandas as pd
 
 df = pd.read_csv("/Users/chenqiu/PycharmProjects/youtube_crawl/comments.csv")
