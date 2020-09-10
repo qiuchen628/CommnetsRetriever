@@ -4,6 +4,8 @@ retrive youtube information from provided youtube ID
 
 import os
 import pickle
+import urllib
+
 from dateutil.parser import parse
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -13,12 +15,17 @@ import json
 import urllib3
 import pandas as pd
 
+from system_logger import my_logger
+
 CLIENT_SECRETS_FILE = "credentials/client_secret_283593393384-frf5vkgvktm3um2lunjqqk0em0a9g7kd.apps.googleusercontent.com.json" # for more information  to create your credentials json please visit https://python.gotrained.com/youtube-api-extracting-comments/
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
 API_KEY = 'AIzaSyBDn1hjcn0_P3AFP12IEeRScbPcFq5MnsI'
 RAW_DATA = 'data/raw_table.csv'
+
+logger_video_id = my_logger(log_name="get_video_id", level="debug".upper())
+logger_video_analysis = my_logger(log_name="video_analysis", level="debug".upper())
 
 def extend_short_url(short_url):
     return urllib3.urlopen(short_url)
@@ -73,48 +80,70 @@ def get_video_comments(service, **kwargs):
     return comments, like_count_temp
 
 
+def get_video_id(url):
+    if url.startswith("https://youtu.be"):
+        url = urllib.request.urlopen(url)
+    try:
+        if type(url) is str:
+            video_id = url.split("=")[1]
+            logger_video_id.info(f"{url}, type: str, video_id: {video_id}")
+        else:
+            video_id = url.url.split("=")[1]
+            logger_video_id.info(f"{url.url}, type: url obj, video_id: {video_id}")
+        return video_id
+    except Exception as e:
+        logger_video_id.error(f"{e}, {url}, type of url: {type(url)}")
+        return None
+
+
 if __name__ == '__main__':
     df = pd.read_csv(RAW_DATA)
     list_of_youtubeID = list(df['Example_Youtube_Link'])
+    # list_of_youtubeID = ["https://youtu.be/kU9bENZ_0Uc"]
     list_size = len(list_of_youtubeID)
     tmp_dict = dict()
+    res = []
     for i in range(list_size):
         try:
             tmp_dict[i] = dict()
-            video_id = list_of_youtubeID[i][17:]
-            os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-            print ("https://www.youtube.com/watch?v=" + video_id)  # Here the videoID is printed
-            service = get_authenticated_service()
-            comments, like_count_temp = get_video_comments(service, part='snippet', videoId= video_id, textFormat='plainText')
-            SpecificVideoID = video_id
-            SpecificVideoUrl = 'https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=' + SpecificVideoID + '&key=' + API_KEY
-            response = request.urlopen(SpecificVideoUrl)
-            videos = json.load(response)  # decodes the response so we can work with it
-            for video in videos['items']:
-              try:
-                  if video['kind'] == 'youtube#video':
-                    print("Number of views:    " + video['statistics']['viewCount'])
-                    tmp_dict[i]['viewCnt'] = video['statistics']['viewCount']
-                    print("Number of likes:    " + video['statistics']['likeCount'])
-                    tmp_dict[i]['likeCount'] = video['statistics']['likeCount']
-                    print("Number of dislikes: " + video['statistics']['dislikeCount'])
-                    tmp_dict[i]['dislikeCount'] = video['statistics']['dislikeCount']
-                    print("Number of comments: " + video['statistics']['commentCount'])
-                    tmp_dict[i]['commentCount'] = video['statistics']['commentCount']
-                    tmp_dict[i]['comments'] = comments
-                    print("Duration of video: " + video['contentDetails']['duration'])
-                    tmp_dict[i]['duration'] = video['contentDetails']['duration']
-                    print("posted date:" + video['snippet']['publishedAt'][:10])
-                    tmp_dict[i]['posted_date'] = video['snippet']['publishedAt'][:10]
-                    tmp_date = video['snippet']['publishedAt'][:10]
-                    get_date_obj = parse(tmp_date)
-                    tmp_dict[i]['weekend'] = is_weekend(get_date_obj.isoweekday())
-                    print('Weekend:', is_weekend(get_date_obj.isoweekday()))
-                    print ("\n")
-              except:
-                  pass
+            video_id = get_video_id(list_of_youtubeID[i])
+            # # video_id = list_of_youtubeID[i][17:]
+            # os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+            # print ("https://www.youtube.com/watch?v=" + video_id)  # Here the videoID is printed
+            # service = get_authenticated_service()
+            # comments, like_count_temp = get_video_comments(service, part='snippet', videoId= video_id, textFormat='plainText')
+            # SpecificVideoID = video_id
+            # SpecificVideoUrl = 'https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=' + SpecificVideoID + '&key=' + API_KEY
+            # response = request.urlopen(SpecificVideoUrl)
+            # videos = json.load(response)  # decodes the response so we can work with it
+            # for video in videos['items']:
+            #   try:
+            #       if video['kind'] == 'youtube#video':
+            #         print("Number of views:    " + video['statistics']['viewCount'])
+            #         tmp_dict[i]['viewCnt'] = video['statistics']['viewCount']
+            #         print("Number of likes:    " + video['statistics']['likeCount'])
+            #         tmp_dict[i]['likeCount'] = video['statistics']['likeCount']
+            #         print("Number of dislikes: " + video['statistics']['dislikeCount'])
+            #         tmp_dict[i]['dislikeCount'] = video['statistics']['dislikeCount']
+            #         print("Number of comments: " + video['statistics']['commentCount'])
+            #         tmp_dict[i]['commentCount'] = video['statistics']['commentCount']
+            #         tmp_dict[i]['comments'] = comments
+            #         print("Duration of video: " + video['contentDetails']['duration'])
+            #         tmp_dict[i]['duration'] = video['contentDetails']['duration']
+            #         print("posted date:" + video['snippet']['publishedAt'][:10])
+            #         tmp_dict[i]['posted_date'] = video['snippet']['publishedAt'][:10]
+            #         tmp_date = video['snippet']['publishedAt'][:10]
+            #         get_date_obj = parse(tmp_date)
+            #         tmp_dict[i]['weekend'] = is_weekend(get_date_obj.isoweekday())
+            #         print('Weekend:', is_weekend(get_date_obj.isoweekday()))
+            #         print ("\n")
+            #   except:
+            #       pass
         except:
+            logger_video_analysis.error("Failed to analyze video: " + list_of_youtubeID[i])
             pass
-        print(tmp_dict)
-    with open('process_data.json', 'w') as fp:
-        json.dump(tmp_dict, fp)
+        # print(tmp_dict )
+    print(len(res))
+    print(f"total url count: {list_size}, ")
+    # with open('process_data.json', 'w') as fp:
+    #     json.dump(tmp_dict, fp)
