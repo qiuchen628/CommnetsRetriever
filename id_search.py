@@ -52,9 +52,7 @@ def is_weekend(week_num):
 
 
 def get_duration_seconds(raw_duration):
-    print(raw_duration)
     minute = re.search('PT(.*)M', raw_duration)
-    print(minute)
     if 'M' in raw_duration:
         second = re.search('M(.*)S', raw_duration)
         if second:
