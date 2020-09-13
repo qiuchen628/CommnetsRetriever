@@ -3,6 +3,7 @@ retrive youtube information from provided youtube ID
 """
 import os
 import pickle
+import time
 import urllib
 from datetime import datetime, timezone
 
@@ -18,11 +19,11 @@ import re
 
 from system_logger import my_logger
 
-CLIENT_SECRETS_FILE = "credentials/client_secret_580961619378-jh7fum9uo75kukq5kemrgqrc0bflmeie.apps.googleusercontent.com.json"
+CLIENT_SECRETS_FILE = "client_secret_232775461488-81656ltbgcc2g18gb8pkd8j9oegsgji1.apps.googleusercontent.com.json"
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
-API_KEY = 'AIzaSyBdivBbSHA0tX0Ee89PCI6CKvQWJu2Plq4'
+API_KEY = 'AIzaSyAu_TPm1BR30Vud3hqolAx7eQuR7_5qVZg'
 RAW_DATA = 'data/test_samples.csv'
 
 logger_video_id = my_logger(log_name="get_video_id", level="debug".upper())
@@ -126,6 +127,7 @@ if __name__ == '__main__':
     list_of_youtubeID = list(df['Example_Youtube_Link'])
     list_size = len(list_of_youtubeID)
     tmp_dict = dict()
+    res = "./files"
     for i in range(list_size):
         try:
             tmp_dict = dict()
@@ -153,6 +155,8 @@ if __name__ == '__main__':
                      print("Number of comments: " + video['statistics']['commentCount'])
                      tmp_dict['commentCount'] = video['statistics']['commentCount']
                      tmp_dict['comments'] = comments
+                     # print("subscriberCount: " + video['statistics']['subscriberCount'])
+                     # tmp_dict['subscriberCount'] = video['statistics']['subscriberCount']
                      print("Duration of video (sec): ", get_duration_seconds(video['contentDetails']['duration']))
                      tmp_dict['duration'] = get_duration_seconds(video['contentDetails']['duration'])
                      print("Posted date:" + video['snippet']['publishedAt'][:10])
@@ -163,10 +167,23 @@ if __name__ == '__main__':
                      get_date_obj = parse(tmp_date)
                      tmp_dict['weekend'] = is_weekend(get_date_obj.isoweekday())
                      print('Weekend:', is_weekend(get_date_obj.isoweekday()))
-                     print ("\n")
-                     with open('files/' + SpecificVideoID + '.json', 'w') as fp:
-                         json.dump(tmp_dict, fp)
-                except:
+
+                     channel_id = video["snippet"]["channelId"]
+                     tmp_dict["channel_id"] = channel_id
+
+                     channel_url = "https://www.googleapis.com/youtube/v3/channels?part=statistics&id="+f"{channel_id}&key="+f"{API_KEY}"
+                     rep_channel = urllib.request.urlopen(channel_url).read().decode("utf-8")
+                     rep_channel_json = json.loads(rep_channel)
+                     subscriberCount = rep_channel_json["items"][0]["statistics"]["subscriberCount"]
+                     print(f"subscriberCount: {subscriberCount}")
+                     tmp_dict["subscriberCount"] = subscriberCount
+
+                     if not os.path.isdir(res):
+                         os.mkdir(res)
+                     with open(os.path.join(res, SpecificVideoID + '.json'), 'w') as fp:
+                         json.dump(tmp_dict, fp, indent=4)
+                except Exception as e:
+                    print(e)
                     pass
         except Exception as e:
             print(e)
