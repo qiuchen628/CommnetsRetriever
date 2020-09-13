@@ -19,11 +19,11 @@ import re
 
 from system_logger import my_logger
 
-CLIENT_SECRETS_FILE = "client_secret_232775461488-81656ltbgcc2g18gb8pkd8j9oegsgji1.apps.googleusercontent.com.json"
+CLIENT_SECRETS_FILE = "/Users/chenqiu/PycharmProjects/CommnetsRetriever/credentials/client_secret_283593393384-frf5vkgvktm3um2lunjqqk0em0a9g7kd.apps.googleusercontent.com.json"
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
-API_KEY = ''
+API_KEY = 'AIzaSyBDn1hjcn0_P3AFP12IEeRScbPcFq5MnsI'
 RAW_DATA = 'data/test_samples.csv'
 
 logger_video_id = my_logger(log_name="get_video_id", level="debug".upper())
@@ -52,10 +52,15 @@ def is_weekend(week_num):
 
 
 def get_duration_seconds(raw_duration):
+    print(raw_duration)
     minute = re.search('PT(.*)M', raw_duration)
+    print(minute)
     if 'M' in raw_duration:
         second = re.search('M(.*)S', raw_duration)
-        total_sec = int(minute.group(1)) * 60 + int(second.group(1))
+        if second:
+            total_sec = int(minute.group(1)) * 60 + int(second.group(1))
+        else:
+            total_sec = int(minute.group(1)) * 60
     else:
         matched_sec = re.search('PT(.*)S', raw_duration)
         total_sec = int(matched_sec.group(1))
@@ -79,7 +84,7 @@ def get_authenticated_service():
         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
             pickle.dump(credentials, token)
-    return build(API_SERVICE_NAME, API_VERSION, credentials = credentials)
+    return build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
 
 
 def get_video_comments(service, **kwargs):
