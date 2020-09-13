@@ -11,7 +11,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 # The CLIENT_SECRETS_FILE variable specifies the name of a file that contains
 # the OAuth 2.0 information for this application, including its client_id and
 # client_secret.
-CLIENT_SECRETS_FILE = "/Users/chenqiu/PycharmProjects/youtube_crawl/credentials/client_secret_283593393384-frf5vkgvktm3um2lunjqqk0em0a9g7kd.apps.googleusercontent.com.json"
+CLIENT_SECRETS_FILE = "/Users/chenqiu/PycharmProjects/CommnetsRetriever/credentials/client_secret_762294129256-q5bps95ea18hk409goqp4e1c8p6u4bu7.apps.googleusercontent.com.json"
 
 # This OAuth 2.0 access scope allows for full read/write access to the
 # authenticated user's account and requires requests to use an SSL connection.

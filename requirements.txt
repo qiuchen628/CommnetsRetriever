@@ -33,3 +33,5 @@ uritemplate==3.0.1
 urllib2-file==0.2.1
 urllib2-prior-auth==0.2.0
 urllib3==1.25.10
+DateTime
+regex
