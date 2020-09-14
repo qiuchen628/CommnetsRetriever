@@ -91,7 +91,7 @@ if __name__ == '__main__':
         print(f"comment score: {comment_score}")
         json_data["comment_score"] = comment_score
 
-        new_file_path = os.path.join(json_dir_to, video[:5] + "_comment.json")
+        new_file_path = os.path.join(json_dir_to, video[:-5] + "_comment.json")
         with open(new_file_path, 'w') as f:
             json.dump(json_data, f, indent=4)
 
