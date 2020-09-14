@@ -6,7 +6,6 @@ import pickle
 import time
 import urllib
 from datetime import datetime, timezone
-
 from dateutil.parser import parse
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -19,11 +18,11 @@ import re
 
 from system_logger import my_logger
 
-CLIENT_SECRETS_FILE = "/Users/chenqiu/PycharmProjects/CommnetsRetriever/credentials/client_secret_283593393384-frf5vkgvktm3um2lunjqqk0em0a9g7kd.apps.googleusercontent.com.json"
+CLIENT_SECRETS_FILE = "credentials/client_secret_895600918544-2l86bo38dk05ckrm4ajgo9el3c2h5r57.apps.googleusercontent.com.json"
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
-API_KEY = 'AIzaSyBDn1hjcn0_P3AFP12IEeRScbPcFq5MnsI'
+API_KEY = 'AIzaSyB1X2ZKagZQ7H57KVG3RcZEgfbg01l4qn0'
 RAW_DATA = 'data/test_samples.csv'
 
 logger_video_id = my_logger(log_name="get_video_id", level="debug".upper())
@@ -139,7 +138,11 @@ if __name__ == '__main__':
             os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
             print("https://www.youtube.com/watch?v=" + video_id)  # Here the videoID is printed
             service = get_authenticated_service()
-            comments, like_count_temp = get_video_comments(service, part='snippet', videoId=video_id, textFormat='plainText')
+            try:
+                comments, like_count_temp = get_video_comments(service, part='snippet', videoId=video_id, textFormat='plainText')
+            except:
+                comments = []
+                like_count_temp = 0
             SpecificVideoID = video_id
             SpecificVideoUrl = 'https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id=' + SpecificVideoID + '&key=' + API_KEY
             response = request.urlopen(SpecificVideoUrl)
@@ -170,10 +173,8 @@ if __name__ == '__main__':
                      get_date_obj = parse(tmp_date)
                      tmp_dict['weekend'] = is_weekend(get_date_obj.isoweekday())
                      print('Weekend:', is_weekend(get_date_obj.isoweekday()))
-
                      channel_id = video["snippet"]["channelId"]
                      tmp_dict["channel_id"] = channel_id
-
                      channel_url = "https://www.googleapis.com/youtube/v3/channels?part=statistics&id="+f"{channel_id}&key="+f"{API_KEY}"
                      rep_channel = urllib.request.urlopen(channel_url).read().decode("utf-8")
                      rep_channel_json = json.loads(rep_channel)
