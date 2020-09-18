@@ -3,3 +3,5 @@ process_data.json
 files/*
 credentials/*
 *.pickle
+classifier_test_data/*
+sentiment_score_data/*
