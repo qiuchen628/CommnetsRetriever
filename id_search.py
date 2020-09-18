@@ -23,7 +23,7 @@ YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 DEVELOPER_KEY = 'key'
 
-CLIENT_SECRETS_FILE = "credentials/client_secret_895600918544-2l86bo38dk05ckrm4ajgo9el3c2h5r57.apps.googleusercontent.com.json"
+CLIENT_SECRETS_FILE = ""
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
