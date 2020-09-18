@@ -23,11 +23,11 @@ YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 DEVELOPER_KEY = 'key'
 
-CLIENT_SECRETS_FILE = "credentials/client_secret_895600918544-2l86bo38dk05ckrm4ajgo9el3c2h5r57.apps.googleusercontent.com.json"
+CLIENT_SECRETS_FILE = "credentials/client_secret_762294129256-q5bps95ea18hk409goqp4e1c8p6u4bu7.apps.googleusercontent.com.json"
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
-API_KEY = 'AIzaSyB1X2ZKagZQ7H57KVG3RcZEgfbg01l4qn0'
+API_KEY = 'AIzaSyCayOAzBJVnu97ajwtzSb4eji5SoCIDSj4'
 RAW_DATA = 'data/test_samples.csv'
 
 logger_video_id = my_logger(log_name="get_video_id", level="debug".upper())
@@ -96,32 +96,35 @@ def comments_list(service, part, parent_id):
   ).execute()
 
 def get_video_comments(service, **kwargs):
-    print(0.4)
     comments = []
     comment_id_temp = []
     reply_count_temp = []
     like_count_temp = []
     results = service.commentThreads().list(**kwargs).execute()
-    print('*****', results)
+    while results:
+        for item in results['items']:
+          comments.append(item['snippet']['topLevelComment']['snippet']['textDisplay'])
+          comment_id_temp.append(item['snippet']['topLevelComment']['id'])
+          reply_count_temp.append(item['snippet']['totalReplyCount'])
+          like_count_temp.append(item['snippet']['topLevelComment']['snippet']['likeCount'])
+        # Check if another page exists
+        if 'nextPageToken' in results:
+            kwargs['pageToken'] = results['nextPageToken']
+            results = service.commentThreads().list(**kwargs).execute()
+        else:
+            break
+
     """
     while results:
-        print(0.9)
         for item in results['items']:
-            print(1)
-            pid = item['id']
-            try:
-                request = youtube.comments().list(
-                part="snippet",
-                parentId=pid
-                )
-                response = request.execute()
-                print('leveler:', response)
-            except:
-                pass
-            comments.append(item['snippet']['topLevelComment']['snippet']['textDisplay'])
-            comment_id_temp.append(item['snippet']['topLevelComment']['id'])
-            reply_count_temp.append(item['snippet']['totalReplyCount'])
-            like_count_temp.append(item['snippet']['topLevelComment']['snippet']['likeCount'])
+            comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
+            comments.append(comment)
+            if (item['snippet']['totalReplyCount'] > 0):
+                res2 = comments_list(youtube, 'snippet', item['id'])
+                for item2 in res2['items']:
+                    comments = list()
+                    comments.append(item2['id'])
+                    comments.append(item2['snippet']['authorChannelUrl'])
         # Check if another page exists
         if 'nextPageToken' in results:
             kwargs['pageToken'] = results['nextPageToken']
@@ -129,18 +132,6 @@ def get_video_comments(service, **kwargs):
         else:
             break
     """
-    while results:
-        for item in results['items']:
-            comments.append(item['snippet']['topLevelComment']['snippet']['textDisplay'])
-            comment_id_temp.append(item['snippet']['topLevelComment']['id'])
-            reply_count_temp.append(item['snippet']['totalReplyCount'])
-            like_count_temp.append(item['snippet']['topLevelComment']['snippet']['likeCount'])
-        # Check if another page exists
-        if 'nextPageToken' in results:
-            kwargs['pageToken'] = results['nextPageToken']
-            results = service.commentThreads().list(**kwargs).execute()
-        else:
-            break
     return comments, like_count_temp
 
 
@@ -164,9 +155,8 @@ def get_video_id(url):
 
 
 if __name__ == '__main__':
-    api_service_name = "youtube"
-    api_version = "v3"
     youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=API_KEY)
+
     df = pd.read_csv(RAW_DATA)
     list_of_youtubeID = list(df['Example_Youtube_Link'])
     list_size = len(list_of_youtubeID)
@@ -235,7 +225,6 @@ if __name__ == '__main__':
                      subscriberCount = rep_channel_json["items"][0]["statistics"]["subscriberCount"]
                      print(f"subscriberCount: {subscriberCount}")
                      tmp_dict["subscriberCount"] = subscriberCount
-
                      if not os.path.isdir(res):
                          os.mkdir(res)
                      with open(os.path.join(res, SpecificVideoID + '.json'), 'w') as fp:
