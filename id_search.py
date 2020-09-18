@@ -27,7 +27,7 @@ CLIENT_SECRETS_FILE = "credentials/client_secret_895600918544-2l86bo38dk05ckrm4a
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
-API_KEY = 'AIzaSyB1X2ZKagZQ7H57KVG3RcZEgfbg01l4qn0'
+API_KEY = ''
 RAW_DATA = 'data/test_samples.csv'
 
 logger_video_id = my_logger(log_name="get_video_id", level="debug".upper())
